@@ -28,5 +28,4 @@ jobs:
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-          RSS_FEED_URLS: ${{ secrets.RSS_FEED_URLS }}
         run: python -m src.main

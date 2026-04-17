@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 from dotenv import load_dotenv
 from src.rss_fetcher import fetch_articles
@@ -12,6 +13,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def load_config():
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "config.json"
+    )
+    with open(config_path, "r") as f:
+        return json.load(f)
+
+
+def load_feeds():
+    feeds_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "feeds.txt")
+    with open(feeds_path, "r") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+
 def main():
     load_dotenv()
 
@@ -20,11 +35,11 @@ def main():
     smtp_password = os.getenv("SMTP_PASSWORD")
     recipient_email = os.getenv("RECIPIENT_EMAIL")
 
-    feed_urls = os.getenv("RSS_FEED_URLS", "").split(",")
-    feed_urls = [url.strip() for url in feed_urls if url.strip()]
-
-    if not all([groq_api_key, smtp_email, smtp_password, recipient_email, feed_urls]):
+    if not all([groq_api_key, smtp_email, smtp_password, recipient_email]):
         raise ValueError("Missing required environment variables")
+
+    config = load_config()
+    feed_urls = load_feeds()
 
     logger.info(f"Fetching articles from {len(feed_urls)} feed(s)...")
     articles = fetch_articles(feed_urls)
@@ -35,7 +50,7 @@ def main():
         return
 
     logger.info("Evaluating articles with Groq...")
-    relevant = evaluate_articles(articles, groq_api_key)
+    relevant = evaluate_articles(articles, groq_api_key, config)
     logger.info(f"Relevant articles: {len(relevant)}")
 
     if relevant:

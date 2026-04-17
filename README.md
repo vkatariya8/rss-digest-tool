@@ -26,9 +26,17 @@ In your GitHub repo, go to Settings → Secrets and variables → Actions → Ne
 | `SMTP_EMAIL` | Your Gmail address |
 | `SMTP_PASSWORD` | Your Gmail App Password |
 | `RECIPIENT_EMAIL` | Email to receive digest |
-| `RSS_FEED_URLS` | Comma-separated feed URLs |
 
-### 3. Test Locally
+### 3. Manage Feeds & AI Config
+
+**Add/remove RSS feeds** — Edit `feeds.txt` (one URL per line, `#` for comments).
+
+**Change AI model or prompt** — Edit `config.json`:
+- `model`: Groq model name (e.g. `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`)
+- `temperature`: 0.0 to 1.0 (lower = more deterministic)
+- `prompt`: The system prompt sent to the model
+
+### 4. Test Locally
 
 ```bash
 cp .env.example .env
@@ -37,14 +45,7 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
-### 4. Schedule
+### 5. Schedule
 
 Runs automatically at 8:00 AM IST daily via GitHub Actions cron.
 To trigger manually: GitHub Actions → Daily RSS Digest → Run workflow.
-
-## Adding More Feeds
-
-Update the `RSS_FEED_URLS` secret with comma-separated URLs:
-```
-RSS_FEED_URLS=https://feed1.com/rss,https://feed2.com/rss,https://feed3.com/rss
-```
