@@ -6,9 +6,9 @@ Daily AI-powered RSS feed digest that filters startup news for early-stage VC in
 
 ### 1. Get API Keys
 
-**Google Gemini API Key:**
-- Go to https://aistudio.google.com/app/apikey
-- Create a free API key
+**Groq API Key (free):**
+- Go to https://console.groq.com
+- Sign up and create an API key
 
 **Gmail App Password:**
 - Go to your Google Account → Security
@@ -22,7 +22,7 @@ In your GitHub repo, go to Settings → Secrets and variables → Actions → Ne
 
 | Secret Name | Value |
 |---|---|
-| `GEMINI_API_KEY` | Your Gemini API key |
+| `GROQ_API_KEY` | Your Groq API key |
 | `SMTP_EMAIL` | Your Gmail address |
 | `SMTP_PASSWORD` | Your Gmail App Password |
 | `RECIPIENT_EMAIL` | Email to receive digest |

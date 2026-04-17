@@ -1,6 +1,6 @@
-import google.generativeai as genai
 import json
 import logging
+from groq import Groq
 from typing import List, Optional
 from src.rss_fetcher import Article
 
@@ -33,10 +33,11 @@ Respond with ONLY a JSON object in this exact format:
     "category": "fundraising|product_launch|tech_trend|exit|market_shift|policy|other"
 }"""
 
+MODEL = "llama-3.1-8b-instant"
+
 
 def evaluate_article(article: Article, api_key: str) -> Optional[dict]:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    client = Groq(api_key=api_key)
 
     prompt = f"""
 Title: {article.title}
@@ -47,15 +48,17 @@ Summary: {article.summary}
 """
 
     try:
-        response = model.generate_content(
-            f"{SYSTEM_PROMPT}\n\nEvaluate this article:\n{prompt}",
-            generation_config={
-                "temperature": 0.1,
-                "response_mime_type": "application/json",
-            },
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Evaluate this article:\n{prompt}"},
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"},
         )
 
-        result = json.loads(response.text)
+        result = json.loads(response.choices[0].message.content)
 
         if result.get("relevant"):
             logger.info(f"RELEVANT: {article.title} - {result.get('reason')}")
