@@ -8,14 +8,23 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
+SCORE_COLORS = {
+    "high": "#22c55e",
+    "medium": "#f59e0b",
+    "low": "#6b7280",
+}
+
+
 def build_email_body(relevant_articles: List[dict]) -> str:
     date_str = datetime.now().strftime("%B %d, %Y")
+
+    high_count = sum(1 for a in relevant_articles if a.get("relevance_score") == "high")
 
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #1a73e8;">Daily Startup Digest</h2>
-        <p style="color: #666;">{date_str} | {len(relevant_articles)} relevant articles found</p>
+        <p style="color: #666;">{date_str} | {len(relevant_articles)} relevant articles ({high_count} high priority)</p>
         <hr style="border: 1px solid #eee;">
     """
 
@@ -23,17 +32,21 @@ def build_email_body(relevant_articles: List[dict]) -> str:
         article = item["article"]
         reason = item["reason"]
         category = item["category"].replace("_", " ").title()
+        score = item.get("relevance_score", "unknown")
+        stage = item.get("stage_mentioned", "unknown")
+        border_color = SCORE_COLORS.get(score, "#6b7280")
 
         html += f"""
-        <div style="margin-bottom: 25px; padding: 15px; border-left: 3px solid #1a73e8; background: #f8f9fa;">
+        <div style="margin-bottom: 25px; padding: 15px; border-left: 4px solid {border_color}; background: #f8f9fa;">
             <h3 style="margin: 0 0 8px 0;">
                 <a href="{article.link}" style="color: #1a73e8; text-decoration: none;">
                     {article.title}
                 </a>
             </h3>
             <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">
-                <strong>Source:</strong> {article.source} |
-                <strong>Category:</strong> {category}
+                <strong>Score:</strong> <span style="color: {border_color}; font-weight: bold;">{score.upper()}</span> |
+                <strong>Category:</strong> {category} |
+                <strong>Stage:</strong> {stage.replace("-", " ").title()}
             </p>
             <p style="margin: 0 0 8px 0; color: #444; font-size: 14px;">
                 {reason}
@@ -66,7 +79,8 @@ def send_digest(
         logger.info("No relevant articles to send.")
         return False
 
-    subject = f"Daily Startup Digest - {len(relevant_articles)} relevant articles"
+    high_count = sum(1 for a in relevant_articles if a.get("relevance_score") == "high")
+    subject = f"Daily Startup Digest - {len(relevant_articles)} relevant ({high_count} high priority)"
     body = build_email_body(relevant_articles)
 
     msg = MIMEMultipart("alternative")
