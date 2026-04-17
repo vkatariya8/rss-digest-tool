@@ -27,14 +27,19 @@ In your GitHub repo, go to Settings → Secrets and variables → Actions → Ne
 | `SMTP_PASSWORD` | Your Gmail App Password |
 | `RECIPIENT_EMAIL` | Email to receive digest |
 
-### 3. Manage Feeds & AI Config
+### 3. Manage Feeds, AI Config & Watchlist
 
 **Add/remove RSS feeds** — Edit `feeds.txt` (one URL per line, `#` for comments).
 
 **Change AI model or prompt** — Edit `config.json`:
-- `model`: Groq model name (e.g. `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`)
+- `model`: Groq model name (see `_model_options` in the file)
 - `temperature`: 0.0 to 1.0 (lower = more deterministic)
+- `rate_limit.batch_size`: Articles per LLM call (default 5)
+- `rate_limit.delay_seconds`: Pause between batches (default 5s)
+- `sectors`: List of sectors for tagging
 - `prompt`: The system prompt sent to the model
+
+**Manage watchlist** — Edit `watchlist.txt` (keywords/phrases and sectors to watch for, one per line, `#` for comments). Articles matching these get flagged in the email.
 
 ### 4. Test Locally
 

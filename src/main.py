@@ -27,6 +27,14 @@ def load_feeds():
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 
+def load_watchlist():
+    watchlist_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "watchlist.txt"
+    )
+    with open(watchlist_path, "r") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+
 def main():
     load_dotenv()
 
@@ -40,6 +48,7 @@ def main():
 
     config = load_config()
     feed_urls = load_feeds()
+    watchlist = load_watchlist()
 
     logger.info(f"Fetching articles from {len(feed_urls)} feed(s)...")
     articles = fetch_articles(feed_urls)
@@ -49,8 +58,9 @@ def main():
         logger.info("No articles found. Exiting.")
         return
 
-    logger.info("Evaluating articles with Groq...")
-    relevant = evaluate_articles(articles, groq_api_key, config)
+    logger.info(f"Watchlist: {len(watchlist)} keywords loaded")
+    logger.info("Evaluating articles with Groq (batched)...")
+    relevant = evaluate_articles(articles, groq_api_key, config, watchlist)
     logger.info(f"Relevant articles: {len(relevant)}")
 
     if relevant:

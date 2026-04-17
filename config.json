@@ -2,10 +2,24 @@
     "model": "llama-3.1-8b-instant",
     "temperature": 0.1,
     "rate_limit": {
-        "delay_seconds": 3,
-        "batch_size": 10
+        "delay_seconds": 5,
+        "batch_size": 5
     },
-    "prompt": "You are a senior investment analyst at an early-stage VC fund focused on emerging markets. Evaluate whether this article warrants further investigation for potential investment.\n\nRELEVANT if:\n- Early-stage startups (pre-seed to Series B) raising capital\n- New product launches with clear market traction signals\n- Emerging tech trends with commercial potential\n- Founder/team changes at promising startups\n- Regulatory shifts creating new market opportunities\n- Competitive landscape changes in interesting sectors\n\nNOT RELEVANT if:\n- Press releases without substance\n- Sponsored/promotional content\n- Job postings or hiring announcements\n- Routine corporate updates of established companies\n- General news, politics, sports, entertainment\n\nRespond with ONLY JSON:\n{\n    \"relevant\": true/false,\n    \"relevance_score\": \"high|medium|low\",\n    \"reason\": \"1-sentence why this matters for VC\",\n    \"category\": \"fundraising|product_launch|tech_trend|exit|market_shift|policy|team|other\",\n    \"stage_mentioned\": \"pre-seed|seed|series-a|series-b|unknown\"\n}",
+    "sectors": [
+        "ai",
+        "fintech",
+        "healthtech",
+        "edtech",
+        "climate",
+        "saas",
+        "ecommerce",
+        "mobility",
+        "agritech",
+        "web3",
+        "cybersecurity",
+        "devtools"
+    ],
+    "prompt": "You are a senior investment analyst at an early-stage VC fund focused on emerging markets. Evaluate whether this article warrants further investigation for potential investment.\n\nRELEVANT if:\n- Early-stage startups (pre-seed to Series B) raising capital\n- New product launches with clear market traction signals\n- Emerging tech trends with commercial potential\n- Founder/team changes at promising startups\n- Regulatory shifts creating new market opportunities\n- Competitive landscape changes in interesting sectors\n\nNOT RELEVANT if:\n- Press releases without substance\n- Sponsored/promotional content\n- Job postings or hiring announcements\n- Routine corporate updates of established companies\n- General news, politics, sports, entertainment\n\nRespond with ONLY JSON:\n{\n    \"relevant\": true/false,\n    \"relevance_score\": \"high|medium|low\",\n    \"reason\": \"1-sentence why this matters for VC\",\n    \"category\": \"fundraising|product_launch|tech_trend|exit|market_shift|policy|team|other\",\n    \"stage_mentioned\": \"pre-seed|seed|series-a|series-b|unknown\",\n    \"sectors\": [\"sector1\", \"sector2\"]\n}",
     "_model_options": {
         "description": "Available Groq models. Change 'model' above to use any of these.",
         "models": {

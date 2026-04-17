@@ -14,17 +14,38 @@ SCORE_COLORS = {
     "low": "#6b7280",
 }
 
+SECTOR_COLORS = {
+    "ai": "#8b5cf6",
+    "fintech": "#06b6d4",
+    "healthtech": "#ef4444",
+    "edtech": "#f97316",
+    "climate": "#22c55e",
+    "saas": "#3b82f6",
+    "ecommerce": "#ec4899",
+    "mobility": "#14b8a6",
+    "agritech": "#84cc16",
+    "web3": "#a855f7",
+    "cybersecurity": "#6366f1",
+    "devtools": "#64748b",
+}
+
 
 def build_email_body(relevant_articles: List[dict]) -> str:
     date_str = datetime.now().strftime("%B %d, %Y")
 
     high_count = sum(1 for a in relevant_articles if a.get("relevance_score") == "high")
+    watchlist_count = sum(1 for a in relevant_articles if a.get("watchlist_hits"))
 
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #1a73e8;">Daily Startup Digest</h2>
-        <p style="color: #666;">{date_str} | {len(relevant_articles)} relevant articles ({high_count} high priority)</p>
+        <p style="color: #666;">{date_str} | {len(relevant_articles)} relevant articles ({high_count} high priority"""
+
+    if watchlist_count:
+        html += f", {watchlist_count} watchlist hits"
+
+    html += f""")</p>
         <hr style="border: 1px solid #eee;">
     """
 
@@ -35,6 +56,8 @@ def build_email_body(relevant_articles: List[dict]) -> str:
         score = item.get("relevance_score", "unknown")
         stage = item.get("stage_mentioned", "unknown")
         border_color = SCORE_COLORS.get(score, "#6b7280")
+        sectors = item.get("sectors", [])
+        watchlist_hits = item.get("watchlist_hits", [])
 
         html += f"""
         <div style="margin-bottom: 25px; padding: 15px; border-left: 4px solid {border_color}; background: #f8f9fa;">
@@ -48,6 +71,27 @@ def build_email_body(relevant_articles: List[dict]) -> str:
                 <strong>Category:</strong> {category} |
                 <strong>Stage:</strong> {stage.replace("-", " ").title()}
             </p>
+        """
+
+        if watchlist_hits:
+            html += f"""
+            <p style="margin: 0 0 8px 0; font-size: 13px;">
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: bold;">WATCHLIST</span>
+                <span style="color: #92400e; font-size: 12px; margin-left: 6px;">{", ".join(watchlist_hits)}</span>
+            </p>
+            """
+
+        if sectors:
+            sector_badges = ""
+            for sector in sectors:
+                color = SECTOR_COLORS.get(sector.lower(), "#6b7280")
+                sector_badges += f'<span style="background: {color}22; color: {color}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 4px;">{sector}</span>'
+
+            html += f"""
+            <p style="margin: 0 0 8px 0;">{sector_badges}</p>
+            """
+
+        html += f"""
             <p style="margin: 0 0 8px 0; color: #444; font-size: 14px;">
                 {reason}
             </p>
@@ -80,7 +124,15 @@ def send_digest(
         return False
 
     high_count = sum(1 for a in relevant_articles if a.get("relevance_score") == "high")
-    subject = f"Daily Startup Digest - {len(relevant_articles)} relevant ({high_count} high priority)"
+    watchlist_count = sum(1 for a in relevant_articles if a.get("watchlist_hits"))
+
+    subject = (
+        f"Daily Startup Digest - {len(relevant_articles)} relevant ({high_count} high"
+    )
+    if watchlist_count:
+        subject += f", {watchlist_count} watchlist"
+    subject += ")"
+
     body = build_email_body(relevant_articles)
 
     msg = MIMEMultipart("alternative")
