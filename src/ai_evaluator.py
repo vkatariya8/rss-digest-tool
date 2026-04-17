@@ -36,7 +36,7 @@ Respond with ONLY a JSON object in this exact format:
 
 def evaluate_article(article: Article, api_key: str) -> Optional[dict]:
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     prompt = f"""
 Title: {article.title}
