@@ -1,5 +1,18 @@
 # Future Features
 
+## Sort by Priority in Email
+
+**Problem:** Articles appear in feed order, not by importance.
+
+**Solution:** Sort relevant articles before sending email:
+1. High score + watchlist hits first
+2. High score
+3. Medium score + watchlist hits
+4. Medium score
+5. Low score
+
+---
+
 ## Full Article Content Fetching
 
 **Problem:** RSS summaries are often 1-2 sentences, not enough context for accurate LLM evaluation.
