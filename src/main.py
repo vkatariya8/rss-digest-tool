@@ -61,8 +61,9 @@ def main():
     watchlist = load_watchlist()
 
     logger.info(f"Fetching articles from {len(feed_urls)} feed(s)...")
-    articles = fetch_articles(feed_urls)
-    logger.info(f"Total articles fetched: {len(articles)}")
+    hours = config.get("time_window_hours", 24)
+    articles = fetch_articles(feed_urls, hours=hours)
+    logger.info(f"Total articles fetched (last {hours}h): {len(articles)}")
 
     if not articles:
         logger.info("No articles found. Exiting.")

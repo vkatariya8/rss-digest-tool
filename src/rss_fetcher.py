@@ -1,7 +1,8 @@
 import feedparser
 import logging
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime, timezone, timedelta
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,29 @@ class Article:
     source: str
 
 
-def fetch_articles(feed_urls: List[str]) -> List[Article]:
+def parse_date(date_str: str) -> Optional[datetime]:
+    for fmt in (
+        "%a, %d %b %Y %H:%M:%S %z",
+        "%a, %d %b %Y %H:%M:%S %Z",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d",
+    ):
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except ValueError:
+            continue
+    return None
+
+
+def fetch_articles(feed_urls: List[str], hours: int = 24) -> List[Article]:
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     articles = []
+    skipped = 0
 
     for url in feed_urls:
         try:
@@ -28,8 +50,14 @@ def fetch_articles(feed_urls: List[str]) -> List[Article]:
                 continue
 
             source = feed.feed.get("title", url)
+            feed_articles = 0
 
             for entry in feed.entries:
+                pub_date = parse_date(entry.get("published", ""))
+                if pub_date and pub_date < cutoff:
+                    skipped += 1
+                    continue
+
                 article = Article(
                     title=entry.get("title", "Untitled"),
                     link=entry.get("link", ""),
@@ -38,11 +66,17 @@ def fetch_articles(feed_urls: List[str]) -> List[Article]:
                     source=source,
                 )
                 articles.append(article)
+                feed_articles += 1
 
-            logger.info(f"Found {len(feed.entries)} articles from {source}")
+            logger.info(
+                f"Found {feed_articles} recent articles from {source} ({len(feed.entries)} total, {len(feed.entries) - feed_articles} older than {hours}h)"
+            )
 
         except Exception as e:
             logger.error(f"Error fetching {url}: {e}")
             continue
+
+    if skipped:
+        logger.info(f"Skipped {skipped} articles older than {hours} hours")
 
     return articles

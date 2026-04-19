@@ -1,6 +1,7 @@
 {
     "model": "qwen/qwen3-32b",
     "temperature": 0.1,
+    "time_window_hours": 24,
     "rate_limit": {
         "delay_seconds": 45,
         "batch_size": 5
