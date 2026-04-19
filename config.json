@@ -1,5 +1,5 @@
 {
-    "model": "llama-3.3-70b-versatile",
+    "model": "qwen/qwen3-32b",
     "temperature": 0.1,
     "rate_limit": {
         "delay_seconds": 45,
@@ -27,13 +27,14 @@
     "_model_options": {
         "description": "Available Groq models. Change 'model' above to use any of these.",
         "models": {
-            "llama-3.1-8b-instant": "Fast, cheap, good for classification. Default choice.",
-            "llama-3.3-70b-versatile": "Smarter, slower. Better reasoning and nuance. Recommended if quality matters more than speed.",
-            "llama-3.1-70b-versatile": "Previous gen 70B model. Good balance of speed and quality.",
+            "qwen/qwen3-32b": "Best balance of quality and rate limits. 500K tokens/day, 60 RPM. Default choice.",
+            "llama-3.1-8b-instant": "Highest rate limits (14.4K RPD, 500K TPD). Good for classification.",
+            "llama-3.3-70b-versatile": "Best reasoning but tightest limits (1K RPD, 100K TPD). Prone to 429s.",
+            "llama-3.1-70b-versatile": "Previous gen 70B model. Same limits as 3.3.",
             "mixtral-8x7b-32768": "32K context window. Good for very long articles. MoE architecture.",
             "gemma2-9b-it": "Google's Gemma 2. Lightweight, fast, decent quality.",
             "llama-guard-3-8b": "Safety model. Not recommended for article evaluation."
         },
-        "tip": "Start with llama-3.1-8b-instant. Switch to llama-3.3-70b-versatile if you want smarter analysis."
+        "tip": "qwen3-32b is the sweet spot. Use llama-3.1-8b-instant if you still hit 429s."
     }
 }

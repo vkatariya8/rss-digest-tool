@@ -35,7 +35,7 @@ In your GitHub repo, go to Settings → Secrets and variables → Actions → Ne
 - `model`: Groq model name (see `_model_options` in the file)
 - `temperature`: 0.0 to 1.0 (lower = more deterministic)
 - `rate_limit.batch_size`: Articles per LLM call (default 5)
-- `rate_limit.delay_seconds`: Pause between batches (default 5s)
+- `rate_limit.delay_seconds`: Pause between batches (default 45s)
 - `sectors`: List of sectors for tagging
 - `prompt`: The system prompt sent to the model
 
