@@ -35,10 +35,20 @@ def parse_date(date_str: str) -> Optional[datetime]:
     return None
 
 
+DEVANAGARI_RANGE = range(0x0900, 0x0980)
+
+def contains_hindi(text: str, threshold: float = 0.05) -> bool:
+    if not text:
+        return False
+    devanagari = sum(1 for c in text if ord(c) in DEVANAGARI_RANGE)
+    return (devanagari / len(text)) > threshold
+
+
 def fetch_articles(feed_urls: List[str], hours: int = 24) -> List[Article]:
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     articles = []
     skipped = 0
+    skipped_hindi = 0
 
     for url in feed_urls:
         try:
@@ -58,10 +68,17 @@ def fetch_articles(feed_urls: List[str], hours: int = 24) -> List[Article]:
                     skipped += 1
                     continue
 
+                title = entry.get("title", "Untitled")
+                summary = entry.get("summary", "")
+
+                if contains_hindi(title) or contains_hindi(summary):
+                    skipped_hindi += 1
+                    continue
+
                 article = Article(
-                    title=entry.get("title", "Untitled"),
+                    title=title,
                     link=entry.get("link", ""),
-                    summary=entry.get("summary", ""),
+                    summary=summary,
                     published=entry.get("published", ""),
                     source=source,
                 )
@@ -78,5 +95,7 @@ def fetch_articles(feed_urls: List[str], hours: int = 24) -> List[Article]:
 
     if skipped:
         logger.info(f"Skipped {skipped} articles older than {hours} hours")
+    if skipped_hindi:
+        logger.info(f"Skipped {skipped_hindi} Hindi articles")
 
     return articles

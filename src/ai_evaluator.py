@@ -107,7 +107,8 @@ def evaluate_batch_with_retry(
                     continue
 
                 article = batch[idx]
-                if result.get("relevant"):
+                score = result.get("relevance_score", "unknown").lower()
+                if result.get("relevant") and score != "low":
                     watchlist_hits = check_watchlist(article, watchlist)
                     logger.info(
                         f"RELEVANT [{result.get('relevance_score', 'unknown').upper()}]: {article.title} - {result.get('reason')}"
@@ -127,6 +128,8 @@ def evaluate_batch_with_retry(
                     )
                 else:
                     logger.info(f"NOT RELEVANT: {article.title}")
+                if result.get("relevant") and score == "low":
+                    logger.info(f"LOW SCORE (excluded): {article.title}")
 
             return relevant
 
