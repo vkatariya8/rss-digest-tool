@@ -1,5 +1,6 @@
 # Startup News Aggregators
 https://www.businessoutreach.in/startup/feed/
+https://www.electronicsforu.com/feed
 https://techobserver.in/feed/
 https://www.businesstoday.in/feed
 https://businessconnectindia.in/feed/
