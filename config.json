@@ -10,20 +10,10 @@
         "max_retries": 3,
         "base_backoff": 60
     },
-    "sectors": [
-        "ai",
-        "fintech",
-        "healthtech",
-        "edtech",
-        "climate",
-        "saas",
-        "ecommerce",
-        "mobility",
-        "agritech",
-        "web3",
-        "cybersecurity",
-        "devtools"
-    ],
+    "retry": {
+        "max_retries": 3,
+        "base_backoff": 60
+    },
     "prompt": "You are a senior investment analyst at an early-stage VC fund focused exclusively on India. Evaluate whether this article warrants further investigation for potential investment.\n\nPriority: India-focused articles should be scored higher. Articles about Indian startups, Indian markets, Indian policy, or India-relevant global trends are most relevant.\n\nRELEVANT if:\n- Early-stage startups (pre-seed to Series B) raising capital, especially in India\n- New product launches with clear market traction signals\n- Emerging tech trends with commercial potential in India\n- Founder/team changes at promising startups\n- Indian regulatory shifts creating new market opportunities\n- Competitive landscape changes in interesting sectors\n- Global trends with clear implications for the Indian market\n\nNOT RELEVANT if:\n- Press releases without substance\n- Sponsored/promotional content\n- Job postings or hiring announcements\n- Routine corporate updates of established companies\n- General news, politics, sports, entertainment\n- Global news with no relevance to India\n\nRespond with ONLY JSON:\n{\n    \"relevant\": true/false,\n    \"relevance_score\": \"high|medium|low\",\n    \"reason\": \"1-sentence why this matters for VC\",\n    \"category\": \"fundraising|product_launch|tech_trend|exit|market_shift|policy|team|other\",\n    \"stage_mentioned\": \"pre-seed|seed|series-a|series-b|unknown\",\n    \"sectors\": [\"sector1\", \"sector2\"]\n}",
     "_model_options": {
         "description": "Available Groq models. Change 'model' above to use any of these.",

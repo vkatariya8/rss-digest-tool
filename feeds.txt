@@ -10,34 +10,17 @@ https://beststartup.in/feed/
 https://yourstory.com/feed
 https://www.manufacturingtodayindia.com/feed
 https://www.expresshealthcare.in/feed/
-https://biospectrumindia.com/rssfeed.html
+https://www.biospectrumindia.com/rssfeed/latest-news
 https://agriculturepost.com/feed/
 https://www.techinasia.com/feed
 https://www.indianpharmapost.com/feed
 https://www.healthcareradius.in/feed
 https://economictimes.indiatimes.com/tech/startups/rssfeeds/78570540.cms
 https://inc42.com/feed/
-https://entrackr.com/feed/
+https://entrackr.com/rss
 https://www.vccircle.com/rss/
 https://www.dealstreetasia.com/feed/
 https://www.business-standard.com/rss/technology-108.rss
 https://www.forbesindia.com/rss/feed.jsp?category=23
 https://nextbigwhat.com/feed/
 https://factordaily.com/feed/
-
-# VC Fund Blogs
-https://lsvp.com/feed/
-https://blume.vc/feed/
-https://www.accel.com/feed
-https://www.matrixpartners.in/feed/
-https://nexusvp.com/feed/
-https://100x.vc/feed/
-https://www.antler.co/india/feed
-
-# Accelerators & Incubators
-https://t-hub.co/feed/
-https://ciie.co/feed/
-https://www.nsrcel.org/feed/
-https://sine.iitb.ac.in/feed/
-https://www.iitmrespark.com/feed/
-https://villgro.org/feed/

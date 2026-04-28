@@ -2,66 +2,55 @@ import json
 import time
 import logging
 from groq import Groq
-from typing import List, Optional
+from typing import List
 from src.rss_fetcher import Article
 
 logger = logging.getLogger(__name__)
 
 
-BATCH_SYSTEM_PROMPT = """You are a senior investment analyst at an early-stage VC fund focused on emerging markets. Evaluate whether each article warrants further investigation for potential investment.
+BATCH_SYSTEM_PROMPT = """You are a senior investment analyst at an early-stage VC fund focused EXCLUSIVELY on technology startups in India. Your job is to evaluate articles and decide whether they warrant further investigation for potential investment in the Indian tech startup ecosystem.
+
+STRICT RULE — Relevance gate:
+An article is ONLY relevant if it explicitly involves India AND technology startups. This includes Indian tech startups raising capital, Indian founders building tech ventures, Indian tech policy/regulation, or Indian tech market dynamics. Articles about non-tech sectors (e.g. traditional manufacturing, real estate, pure retail) or startups outside India are NOT relevant unless they have a clear, direct implication for Indian tech startups.
 
 RELEVANT if:
-- Early-stage startups (pre-seed to Series B) raising capital
-- New product launches with clear market traction signals
-- Emerging tech trends with commercial potential
-- Founder/team changes at promising startups
-- Regulatory shifts creating new market opportunities
-- Competitive landscape changes in interesting sectors
+- Early-stage Indian technology startups (pre-seed to Series B) raising capital
+- Indian tech founders or India-focused tech teams building new ventures
+- New tech product launches by Indian startups with clear traction signals
+- Emerging technology trends with direct commercial potential for Indian startups
+- Founder/team changes at promising Indian tech startups
+- Indian regulatory or policy shifts affecting the tech startup ecosystem
+- Competitive landscape changes specifically in the Indian tech market
 
 NOT RELEVANT if:
+- Non-Indian startups or markets with no India angle
+- Non-technology sectors (manufacturing, real estate, traditional retail, agriculture without a tech angle, etc.)
 - Press releases without substance
 - Sponsored/promotional content
 - Job postings or hiring announcements
 - Routine corporate updates of established companies
 - General news, politics, sports, entertainment
 
-Available sectors: {sectors}
-
 Respond with ONLY a JSON array where each element corresponds to the article at that index:
 [
-    {{
+    {
         "index": 0,
         "relevant": true/false,
         "relevance_score": "high|medium|low",
-        "reason": "1-sentence why this matters for VC",
-        "category": "fundraising|product_launch|tech_trend|exit|market_shift|policy|team|other",
-        "stage_mentioned": "pre-seed|seed|series-a|series-b|unknown",
-        "sectors": ["sector1", "sector2"]
-    }},
+        "reason": "1-sentence why this matters for VC"
+    },
     ...
 ]"""
-
-
-def check_watchlist(article: Article, watchlist: List[str]) -> List[str]:
-    text = f"{article.title} {article.summary}".lower()
-    return [kw for kw in watchlist if kw.lower() in text]
 
 
 def evaluate_batch_with_retry(
     batch: List[Article],
     api_key: str,
     config: dict,
-    watchlist: List[str],
     max_retries: int = 3,
     base_backoff: int = 60,
 ) -> List[dict]:
     client = Groq(api_key=api_key)
-    sectors = config.get("sectors", [])
-    sectors_str = (
-        ", ".join(sectors)
-        if sectors
-        else "ai, fintech, healthtech, edtech, climate, saas, ecommerce, mobility, agritech, web3, cybersecurity, devtools, other"
-    )
 
     articles_json = json.dumps(
         [
@@ -87,7 +76,7 @@ def evaluate_batch_with_retry(
                 messages=[
                     {
                         "role": "system",
-                        "content": BATCH_SYSTEM_PROMPT.format(sectors=sectors_str),
+                        "content": BATCH_SYSTEM_PROMPT,
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -109,21 +98,14 @@ def evaluate_batch_with_retry(
                 article = batch[idx]
                 score = result.get("relevance_score", "unknown").lower()
                 if result.get("relevant") and score != "low":
-                    watchlist_hits = check_watchlist(article, watchlist)
                     logger.info(
                         f"RELEVANT [{result.get('relevance_score', 'unknown').upper()}]: {article.title} - {result.get('reason')}"
                     )
-                    if watchlist_hits:
-                        logger.info(f"  Watchlist hits: {', '.join(watchlist_hits)}")
                     relevant.append(
                         {
                             "article": article,
                             "reason": result.get("reason", ""),
                             "relevance_score": result.get("relevance_score", "unknown"),
-                            "category": result.get("category", "other"),
-                            "stage_mentioned": result.get("stage_mentioned", "unknown"),
-                            "sectors": result.get("sectors", []),
-                            "watchlist_hits": watchlist_hits,
                         }
                     )
                 else:
@@ -150,7 +132,7 @@ def evaluate_batch_with_retry(
 
 
 def evaluate_articles(
-    articles: List[Article], api_key: str, config: dict, watchlist: List[str]
+    articles: List[Article], api_key: str, config: dict
 ) -> List[dict]:
     relevant_articles = []
     rate_limit = config.get("rate_limit", {"delay_seconds": 45, "batch_size": 5})
@@ -167,7 +149,7 @@ def evaluate_articles(
         )
 
         batch_results = evaluate_batch_with_retry(
-            batch, api_key, config, watchlist, max_retries, base_backoff
+            batch, api_key, config, max_retries, base_backoff
         )
         relevant_articles.extend(batch_results)
 

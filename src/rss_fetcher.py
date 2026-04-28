@@ -1,5 +1,6 @@
 import feedparser
 import logging
+import requests
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -53,10 +54,19 @@ def fetch_articles(feed_urls: List[str], hours: int = 24) -> List[Article]:
     for url in feed_urls:
         try:
             logger.info(f"Fetching feed: {url}")
-            feed = feedparser.parse(url)
+            resp = requests.get(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "application/rss+xml, application/xml, text/xml, */*;q=0.9",
+                },
+                timeout=30,
+            )
+            resp.raise_for_status()
+            feed = feedparser.parse(resp.content)
 
             if feed.bozo and not feed.entries:
-                logger.error(f"Failed to parse feed: {url}")
+                logger.error(f"Failed to parse feed {url}: {feed.get('bozo_exception')}")
                 continue
 
             source = feed.feed.get("title", url)

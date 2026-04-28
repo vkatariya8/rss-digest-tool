@@ -27,24 +27,6 @@ def load_feeds():
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 
-def load_watchlist():
-    watchlist_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "watchlist.txt"
-    )
-    if not os.path.exists(watchlist_path):
-        logger.info("No watchlist.txt found. Running without watchlist.")
-        return []
-    with open(watchlist_path, "r") as f:
-        items = [
-            line.strip() for line in f if line.strip() and not line.startswith("#")
-        ]
-    if not items:
-        logger.info("Watchlist is empty. Running without watchlist.")
-    else:
-        logger.info(f"Watchlist: {len(items)} keywords loaded")
-    return items
-
-
 def main():
     load_dotenv()
 
@@ -58,7 +40,6 @@ def main():
 
     config = load_config()
     feed_urls = load_feeds()
-    watchlist = load_watchlist()
 
     logger.info(f"Fetching articles from {len(feed_urls)} feed(s)...")
     hours = config.get("time_window_hours", 24)
@@ -70,7 +51,7 @@ def main():
         return
 
     logger.info("Evaluating articles with Groq (batched)...")
-    relevant = evaluate_articles(articles, groq_api_key, config, watchlist)
+    relevant = evaluate_articles(articles, groq_api_key, config)
     logger.info(f"Relevant articles: {len(relevant)}")
 
     if relevant:
