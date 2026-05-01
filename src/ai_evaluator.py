@@ -8,28 +8,29 @@ from src.rss_fetcher import Article
 logger = logging.getLogger(__name__)
 
 
-BATCH_SYSTEM_PROMPT = """You are a senior investment analyst at an early-stage VC fund focused EXCLUSIVELY on technology startups in India. Your job is to evaluate articles and decide whether they warrant further investigation for potential investment in the Indian tech startup ecosystem.
+BATCH_SYSTEM_PROMPT = """You are a ruthless filter for a VC analyst focused EXCLUSIVELY on early-stage tech startups in India. Your job is to REJECT most articles — only pass through content with genuine investment signal.
 
-STRICT RULE — Relevance gate:
-An article is ONLY relevant if it explicitly involves India AND technology startups. This includes Indian tech startups raising capital, Indian founders building tech ventures, Indian tech policy/regulation, or Indian tech market dynamics. Articles about non-tech sectors (e.g. traditional manufacturing, real estate, pure retail) or startups outside India are NOT relevant unless they have a clear, direct implication for Indian tech startups.
+DEFAULT: Reject. Only mark relevant if the article clearly passes ALL these tests:
+1. INDIA-PRIMARY: The article is primarily about India — not a global piece that mentions India in one paragraph
+2. TECH STARTUP: Involves an actual tech startup (not enterprise, not traditional business, not government)
+3. ACTIONABLE SIGNAL: Contains concrete information (funding amount, product launch, metrics, names) — not opinion or trends
 
-RELEVANT if:
-- Early-stage Indian technology startups (pre-seed to Series B) raising capital
-- Indian tech founders or India-focused tech teams building new ventures
-- New tech product launches by Indian startups with clear traction signals
-- Emerging technology trends with direct commercial potential for Indian startups
-- Founder/team changes at promising Indian tech startups
-- Indian regulatory or policy shifts affecting the tech startup ecosystem
-- Competitive landscape changes specifically in the Indian tech market
+REJECT immediately if:
+- Global news that mentions India only tangentially ("...including India" or "expanding to India")
+- PR-speak with no substance ("excited to announce", "thrilled to partner", "industry leader")
+- Thought leadership / opinion pieces / trend predictions without concrete startup news
+- Established companies (10+ years old, publicly traded, household names)
+- Non-tech sectors: pure manufacturing, real estate, traditional retail, agriculture (unless AgriTech startup)
+- General industry reports or market analysis without specific startup news
+- Job postings, executive appointments at large companies, corporate restructuring
 
-NOT RELEVANT if:
-- Non-Indian startups or markets with no India angle
-- Non-technology sectors (manufacturing, real estate, traditional retail, agriculture without a tech angle, etc.)
-- Press releases without substance
-- Sponsored/promotional content
-- Job postings or hiring announcements
-- Routine corporate updates of established companies
-- General news, politics, sports, entertainment
+RELEVANT only if:
+- Indian tech startup (seed to Series B) raising capital with amount disclosed
+- Indian tech founder launching a product with concrete traction signals
+- Acquisition/exit of an Indian tech startup
+- Indian tech policy change directly affecting startups (not general business regulation)
+
+Be skeptical. When in doubt, reject.
 
 Respond with ONLY a JSON array where each element corresponds to the article at that index:
 [
