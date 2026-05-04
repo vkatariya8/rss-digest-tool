@@ -1,9 +1,21 @@
+import re
+import html
 import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from typing import List
+
+_TAG_RE = re.compile(r"<[^>]+>")
+_WS_RE = re.compile(r"\s+")
+
+
+def _strip_html(text: str) -> str:
+    if not text:
+        return ""
+    no_tags = _TAG_RE.sub("", text)
+    return _WS_RE.sub(" ", html.unescape(no_tags)).strip()
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +60,7 @@ def build_email_body(relevant_articles: List[dict]) -> str:
                 {reason}
             </p>
             <p style="margin: 0; color: #888; font-size: 12px;">
-                {article.summary[:300]}...
+                {_strip_html(article.summary)[:300]}...
             </p>
         </div>
         """
