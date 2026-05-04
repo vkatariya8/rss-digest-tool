@@ -3,7 +3,7 @@ import json
 import logging
 from dotenv import load_dotenv
 from src.rss_fetcher import fetch_articles
-from src.ai_evaluator import evaluate_articles
+from src.ai_evaluator import evaluate_articles, deduplicate_articles
 from src.email_sender import send_digest
 
 logging.basicConfig(
@@ -53,6 +53,11 @@ def main():
     logger.info("Evaluating articles with Groq (batched)...")
     relevant = evaluate_articles(articles, groq_api_key, config)
     logger.info(f"Relevant articles: {len(relevant)}")
+
+    if relevant:
+        logger.info("Deduplicating articles...")
+        relevant = deduplicate_articles(relevant, groq_api_key, config)
+        logger.info(f"After dedup: {len(relevant)}")
 
     if relevant:
         logger.info("Sending digest email...")

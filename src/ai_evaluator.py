@@ -132,6 +132,107 @@ def evaluate_batch_with_retry(
     return []
 
 
+SCORE_RANK = {"high": 3, "medium": 2, "low": 1, "unknown": 0}
+
+DEDUP_SYSTEM_PROMPT = """You group news articles by the underlying real-world story.
+
+Two articles are duplicates if they cover the same event, funding round, product launch, acquisition, or announcement — even if the headlines and framing differ. Articles about the same company but different events are NOT duplicates.
+
+Respond with ONLY a JSON object of the form:
+{"groups": [[0, 3, 7], [1], [2, 5], ...]}
+
+Every input index must appear in exactly one group. Singleton groups are fine."""
+
+
+def deduplicate_articles(
+    relevant: List[dict],
+    api_key: str,
+    config: dict,
+    max_retries: int = 3,
+    base_backoff: int = 60,
+) -> List[dict]:
+    if len(relevant) <= 1:
+        return relevant
+
+    client = Groq(api_key=api_key)
+
+    payload = json.dumps(
+        [
+            {
+                "index": i,
+                "title": item["article"].title,
+                "summary": (item["article"].summary or "")[:200],
+            }
+            for i, item in enumerate(relevant)
+        ],
+        indent=2,
+    )
+
+    prompt = f"Articles to group:\n{payload}"
+
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=config["model"],
+                messages=[
+                    {"role": "system", "content": DEDUP_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=config.get("temperature", 0.1),
+                response_format={"type": "json_object"},
+            )
+
+            data = json.loads(response.choices[0].message.content)
+            groups = data.get("groups", [])
+            if not groups:
+                logger.warning("Dedup returned no groups; keeping all articles.")
+                return relevant
+
+            kept: List[dict] = []
+            seen_indices = set()
+            for group in groups:
+                indices = [i for i in group if 0 <= i < len(relevant) and i not in seen_indices]
+                if not indices:
+                    continue
+                seen_indices.update(indices)
+
+                best_idx = max(
+                    indices,
+                    key=lambda i: (
+                        SCORE_RANK.get(relevant[i].get("relevance_score", "unknown").lower(), 0),
+                        len(relevant[i]["article"].summary or ""),
+                    ),
+                )
+                kept.append(relevant[best_idx])
+
+                for i in indices:
+                    if i != best_idx:
+                        logger.info(
+                            f"DEDUP DROP: {relevant[i]['article'].title} -> kept: {relevant[best_idx]['article'].title}"
+                        )
+
+            for i, item in enumerate(relevant):
+                if i not in seen_indices:
+                    kept.append(item)
+
+            return kept
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                backoff = base_backoff * (2**attempt)
+                logger.warning(
+                    f"Dedup failed (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {backoff}s..."
+                )
+                time.sleep(backoff)
+            else:
+                logger.error(
+                    f"Dedup failed after {max_retries} attempts: {e}. Returning articles unchanged."
+                )
+                return relevant
+
+    return relevant
+
+
 def evaluate_articles(
     articles: List[Article], api_key: str, config: dict
 ) -> List[dict]:
