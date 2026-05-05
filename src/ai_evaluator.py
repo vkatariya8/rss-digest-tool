@@ -134,14 +134,23 @@ def evaluate_batch_with_retry(
 
 SCORE_RANK = {"high": 3, "medium": 2, "low": 1, "unknown": 0}
 
-DEDUP_SYSTEM_PROMPT = """You group news articles by the underlying real-world story.
+DEDUP_SYSTEM_PROMPT = """You group news article headlines by the underlying real-world story.
 
-Two articles are duplicates if they cover the same event, funding round, product launch, acquisition, or announcement — even if the headlines and framing differ. Articles about the same company but different events are NOT duplicates.
+Two headlines are DUPLICATES if they describe the same event — same company AND same funding round / launch / acquisition / partnership / earnings report — even if the wording is very different. Group them aggressively: multiple outlets routinely cover the same story with different angles.
 
-Respond with ONLY a JSON object of the form:
-{"groups": [[0, 3, 7], [1], [2, 5], ...]}
+Same company but DIFFERENT events (e.g. one funding round vs. a product launch) are NOT duplicates.
 
-Every input index must appear in exactly one group. Singleton groups are fine."""
+Example input:
+0: Tsavorite raises $5M from Pavestone
+1: Pavestone invests $5M in AI compute startup Tsavorite
+2: AI computing solutions provider Tsavorite raises $5 Mn led by Pavestone
+3: Aurm bags Rs 42 Cr Series A
+4: GalaxEye launches Mission Drishti
+
+Correct output:
+{"groups": [[0, 1, 2], [3], [4]]}
+
+Respond with ONLY a JSON object: {"groups": [[...indices...], ...]}. Every input index must appear in exactly one group."""
 
 
 def deduplicate_articles(
@@ -156,29 +165,22 @@ def deduplicate_articles(
 
     client = Groq(api_key=api_key)
 
-    payload = json.dumps(
-        [
-            {
-                "index": i,
-                "title": item["article"].title,
-                "summary": (item["article"].summary or "")[:200],
-            }
-            for i, item in enumerate(relevant)
-        ],
-        indent=2,
+    payload = "\n".join(
+        f"{i}: {item['article'].title}" for i, item in enumerate(relevant)
     )
 
-    prompt = f"Articles to group:\n{payload}"
+    prompt = f"Articles to group (index: title):\n{payload}"
 
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
-                model=config["model"],
+                model=config.get("dedup_model", "llama-3.1-8b-instant"),
                 messages=[
                     {"role": "system", "content": DEDUP_SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},
                 ],
                 temperature=config.get("temperature", 0.1),
+                max_tokens=2048,
                 response_format={"type": "json_object"},
             )
 
