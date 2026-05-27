@@ -16,6 +16,7 @@ DEFAULT: Reject. Only mark relevant if the article clearly passes ALL these test
 3. ACTIONABLE SIGNAL: Contains concrete information (funding amount, product launch, metrics, names) — not opinion or trends
 
 REJECT immediately if:
+- Fundraise announcements of any kind (seed, Series A/B/C, bridge, debt, grants, etc.) — these are tracked separately and must NEVER appear in this briefing
 - Global news that mentions India only tangentially ("...including India" or "expanding to India")
 - PR-speak with no substance ("excited to announce", "thrilled to partner", "industry leader")
 - Thought leadership / opinion pieces / trend predictions without concrete startup news
@@ -24,11 +25,11 @@ REJECT immediately if:
 - General industry reports or market analysis without specific startup news
 - Job postings, executive appointments at large companies, corporate restructuring
 
-RELEVANT only if:
-- Indian tech startup (seed to Series B) raising capital with amount disclosed
+RELEVANT only if (and NOT a fundraise story):
 - Indian tech founder launching a product with concrete traction signals
 - Acquisition/exit of an Indian tech startup
 - Indian tech policy change directly affecting startups (not general business regulation)
+- Significant product/business milestones from Indian tech startups (revenue, user metrics, expansion) — but never funding rounds
 
 Be skeptical. When in doubt, reject.
 
